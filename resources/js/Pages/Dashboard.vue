@@ -14,26 +14,28 @@
                     <label for="image" class="form-label">Image</label>
                     <input type="file" class="form-control" id="image" @change="handleFileUpload" />
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <div class="d-md-flex justify-content-md-end ">
+                     <button type="submit" class="btn btn-primary ">Submit</button>
+                </div>
             </form>
-
             <br>
             <hr>
             <br>
             <h4 class="fw-bold">Student Data</h4>
-
-            <table class="table">
+            <table class="table table-dark table-striped">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Image</th>
+                        <th>Student Id</th>
+                        <th>Student Name</th>
+                        <th>Student Age</th>
+                        <th>Profile Image</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="student in students" :key="student.id">
+                        <td>{{ student.id }}</td>
                         <td>{{ student.name }}</td>
                         <td>{{ student.age }}</td>
                         <td>
@@ -44,13 +46,11 @@
                             <span class="badge bg-danger" v-if="student.status == 0">Inactive</span>
                         </td>
                         <td>
-                            <button @click="getStudent(student.id)" class="btn btn-warning">Edit</button>
-                            <button @click="deleteStudent(student.id)" class="btn btn-danger">Delete</button>
-                            <button v-if="student.status == 0" @click="changeStatus(student.id)"
-                                class="btn btn-success">Active</button>
-                            <button v-if="student.status == 1" @click="changeStatus(student.id)"
-                                class="btn btn-info">Deactivate</button>
-                        </td>
+                            <a @click="getStudent(student.id)" class="btn btn-warning me-2"><i class="fas fa-edit"></i> Edit</a>
+                            <a @click="deleteStudent(student.id)" class="btn btn-danger me-2"><i class="fas fa-trash"></i> Delete</a>
+                            <a v-if="student.status == 0" @click="changeStatus(student.id)" class="btn btn-success me-2"><i class="fas fa-check"></i> Active</a>
+                            <a v-if="student.status == 1" @click="changeStatus(student.id)" class="btn btn-info"><i class="fas fa-ban"></i> Deactivate</a>
+                       </td>
                     </tr>
                 </tbody>
             </table>
@@ -114,46 +114,43 @@ const handleEditFileUpload = (e) => {
 
 const addStudent = async () => {
     try {
-
-        //sending request to store student
         await axios.post(route('student.store'), student.value, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
 
-        //student alert and object clear
         alert('Student added successfully');
         student.value = {};
-
-        //form reset
         const form = document.querySelector('form');
         form.reset();
+        allStudents();
     } catch (error) {
-        //try catch block for error handling
+
         alert('Failed to add student');
     }
 };
 
 const deleteStudent = async (id) => {
     try {
-        //sending request to delete student
+
+        const confirmDelete = confirm('Do you want to delete this student?');
+        if (!confirmDelete) return;
         await axios.delete(route('student.delete', id));
 
-        //alert for student delete
         alert('Student deleted successfully');
-
-        //get all students
         allStudents();
+
     } catch (error) {
-        //try catch block for error handling
+
         alert('Failed to delete student');
     }
 };
 
+
 const getStudent = async (id) => {
     try {
-        //sending request to get student
+
         const response = await axios.get(route('student.get', id));
         editStudent.value = response.data;
 
@@ -161,7 +158,7 @@ const getStudent = async (id) => {
         const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
         modal.show();
     } catch (error) {
-        //try catch block for error handling
+
         alert('Failed to get student');
     }
 };
@@ -175,7 +172,7 @@ const updateStudent = async () => {
             },
         });
 
-        //alert for student update and object clear
+
         alert('Student updated successfully');
         editStudent.value = {};
 
@@ -183,43 +180,38 @@ const updateStudent = async () => {
         const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
         modal.hide();
 
-        //get all students
         allStudents();
     } catch (error) {
-        //try catch block for error handling
+
         alert('Failed to update student');
     }
 };
 
 const allStudents = async () => {
     try {
-        //sending request to get all students
+
         const response = await axios.get(route('student.all'));
         students.value = response.data;
     } catch (error) {
-        //try catch block for error handling
+
         alert('Failed to get students');
     }
 };
 
 const changeStatus = async (id) => {
     try {
-        //sending request to change student status
+
         await axios.get(route('student.status', id));
-
-        //alert for student status change
         alert('Student status changed successfully');
-
-        //get all students
         allStudents();
+
     } catch (error) {
-        //try catch block for error handling
+
         alert('Failed to change student status');
     }
 };
 
 onMounted(() => {
-    //get all students on page load
     allStudents();
 });
 
